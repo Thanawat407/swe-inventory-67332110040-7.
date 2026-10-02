@@ -1,6 +1,6 @@
 import datetime
 import pytest
-import pricing_legacy
+import pricing as pricing_legacy
 
 
 @pytest.fixture(autouse=True)
