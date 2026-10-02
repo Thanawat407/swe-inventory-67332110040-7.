@@ -48,3 +48,71 @@ def test_low_stock_items_threshold_negative():
     inv.add_item("ZeroItem", 0, 10.0)
     inv.add_item("SomeItem", 5, 10.0)
     assert inv.low_stock_items(-1) == []
+
+
+# ==============================================================================
+# ขั้นที่ 4: Unit Tests สำหรับเมธอด sell (AI Test + ส่วนเสริม Edge Cases 4 กลุ่ม)
+# ==============================================================================
+
+def test_sell_normal_ai_generated():
+    """กรณีปกติที่ AI มักจะเขียนให้: ขายสินค้าได้สำเร็จ และยอดคงเหลือลดลงถูกต้อง"""
+    inv = Inventory()
+    inv.add_item("Apple", 10, 15.0)
+    remaining = inv.sell("Apple", 3)
+    assert remaining == 7
+
+
+def test_sell_boundary_exact_remaining_stock():
+    """กลุ่มที่ 1 ค่าขอบ: ขายเท่ากับจำนวนที่เหลือทั้งหมด -> ต้องสำเร็จและคงเหลือ 0 พอดี"""
+    inv = Inventory()
+    inv.add_item("Apple", 10, 15.0)
+    remaining = inv.sell("Apple", 10)
+    assert remaining == 0
+
+
+def test_sell_invalid_zero_amount():
+    """กลุ่มที่ 2 ค่าที่ไม่ควรรับ: ขายจำนวน 0 -> ต้อง raise ValueError"""
+    inv = Inventory()
+    inv.add_item("Apple", 10, 15.0)
+    with pytest.raises(ValueError, match="จำนวนที่ขายต้องมากกว่าศูนย์"):
+        inv.sell("Apple", 0)
+
+
+def test_sell_invalid_negative_amount():
+    """กลุ่มที่ 2 ค่าที่ไม่ควรรับ: ขายจำนวนติดลบ -> ต้อง raise ValueError"""
+    inv = Inventory()
+    inv.add_item("Apple", 10, 15.0)
+    with pytest.raises(ValueError, match="จำนวนที่ขายต้องมากกว่าศูนย์"):
+        inv.sell("Apple", -5)
+
+
+def test_sell_invalid_exceeds_stock():
+    """กลุ่มที่ 2 ค่าที่ไม่ควรรับ: ขายเกินจำนวนคงเหลือ -> ต้อง raise ValueError พร้อมข้อความระบุชัดเจน"""
+    inv = Inventory()
+    inv.add_item("Apple", 5, 15.0)
+    with pytest.raises(ValueError, match="ไม่เพียงพอสำหรับการขาย"):
+        inv.sell("Apple", 6)
+
+
+def test_sell_error_item_not_found():
+    """กลุ่มที่ 3 เส้นทาง error: ขายสินค้าที่ไม่มีในคลัง -> ต้อง raise KeyError พร้อมข้อความถูกต้อง"""
+    inv = Inventory()
+    inv.add_item("Apple", 10, 15.0)
+    with pytest.raises(KeyError, match="ไม่พบสินค้า 'Orange' ในระบบ"):
+        inv.sell("Orange", 2)
+
+
+def test_sell_invalid_type_string():
+    """กลุ่มที่ 4 ชนิดข้อมูล: ส่งจำนวนเป็นข้อความ (str) -> ต้อง raise TypeError"""
+    inv = Inventory()
+    inv.add_item("Apple", 10, 15.0)
+    with pytest.raises(TypeError, match="จำนวนที่ขายต้องเป็นจำนวนเต็มเท่านั้น"):
+        inv.sell("Apple", "three")
+
+
+def test_sell_invalid_type_float():
+    """กลุ่มที่ 4 ชนิดข้อมูล: ส่งจำนวนเป็นทศนิยม (float) -> ต้อง raise TypeError"""
+    inv = Inventory()
+    inv.add_item("Apple", 10, 15.0)
+    with pytest.raises(TypeError, match="จำนวนที่ขายต้องเป็นจำนวนเต็มเท่านั้น"):
+        inv.sell("Apple", 2.5)
